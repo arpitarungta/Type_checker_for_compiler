@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Type Checker</title>
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-vD8lnGfRI5iTfQ++3Ru3lEoOxv2ohM5zEtYTZsKUMDqH7HKAFYzNz6+eRiZCEp8kVPxE1AnUTU2Y1PNRsfE1Lg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script&family=Poppins:wght@300;500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f4e4dc, #d9c1b1);
+      min-height: 100vh;
+      color: #5b3a29;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 3rem;
+    }
+
+    header {
+      width: 100%;
+      max-width: 900px;
+      margin: 2rem auto 1rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 35px rgba(91, 58, 41, 0.3);
+      background: #f7e9df;
+      text-align: center;
+      padding: 1.5rem 2rem;
+    }
+
+    header h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3.8rem;
+      color: #7a5230;
+      margin: 0;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 3px #bcae9f;
+    }
+
+    main {
+      background: #fff5f0;
+      width: 100%;
+      max-width: 900px;
+      border-radius: 15px;
+      padding: 2.5rem 3rem;
+      box-shadow: 0 12px 30px rgba(91, 58, 41, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      z-index: 10;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #7a5230;
+    }
+
+    textarea#codeInput {
+      width: 100%;
+      height: 200px;
+      padding: 18px 20px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+      border-radius: 15px;
+      border: 2px solid #d1bfa9;
+      background: #fef6f2;
+      color: #5b3a29;
+      resize: vertical;
+    }
+
+    textarea#codeInput:focus {
+      border-color: #b38e6d;
+      outline: none;
+      box-shadow: 0 0 12px rgba(179, 142, 109, 0.8);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1.3rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .buttons button {
+      background: linear-gradient(135deg, #b38e6d, #7a5230);
+      border: none;
+      color: white;
+      padding: 0.9rem 2.2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(122, 82, 48, 0.5);
+      transition: background 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .buttons button:hover {
+      background: linear-gradient(135deg, #7a5230, #5e3c20);
+      transform: translateY(-5px);
+    }
+
+    .output-section {
+      background: #fef6f2;
+      border-radius: 15px;
+      border: 1.8px solid #d1bfa9;
+      padding: 1.8rem 2rem;
+      color: #5b3a29;
+    }
+
+    .output-section h2 {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #7a5230;
+      border-bottom: 3px solid #b38e6d;
+      margin-bottom: 1rem;
+    }
+
+    .output-section pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    /* Key Features Section */
+    .key-features {
+      background-color: #fef6f2;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .key-features h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #5b3a29;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+    }
+
+    .features-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .feature-item {
+      max-width: 250px;
+      padding: 0 10px;
+    }
+
+    .feature-item h3 {
+      margin-top: 16px;
+      color: #7a5230;
+    }
+
+    /* Team Section */
+    .team-section {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .team-section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #5b3a29;
+      margin-bottom: 2rem;
+      letter-spacing: 2px;
+    }
+
+    .team-members {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .member {
+      background: #fef6f2;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 6px 20px rgba(91, 58, 41, 0.1);
+      max-width: 180px;
+      text-align: center;
+      color: #7a5230;
+      transition: transform 0.3s;
+    }
+
+    .member:hover { transform: scale(1.05); }
+
+    .member img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 0.8rem;
+    }
+
+    /* Redesigned Footer */
+    footer {
+      margin-top: 4rem;
+      background: linear-gradient(135deg, #7a5230, #5e3c20);
+      color: #fef6f2;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      width: 100%;
+      max-width: 900px;
+      border-radius: 15px;
+      box-shadow: 0 10px 35px rgba(91, 58, 41, 0.3);
+      user-select: none;
+    }
+
+    footer h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-shadow: 1px 1px 3px #3b220c;
+    }
+
+    .social-links {
+      margin-bottom: 1.2rem;
+    }
+
+    .social-links a {
+      color: #fef6f2;
+      margin: 0 18px;
+      font-size: 28px;
+      transition: color 0.3s ease, transform 0.3s ease;
+      display: inline-block;
+    }
+
+    .social-links a:hover {
+      color: #d9c1b1;
+      transform: scale(1.2);
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.8px;
+      color: #e6d9c9;
+      text-shadow: 0 0 5px #3b220c;
+    }
+
+    @media (max-width: 600px) {
+      .team-members {
+        flex-direction: column;
+        align-items: center;
+      }
+      header h1 { font-size: 2.8rem; }
+      .social-links a {
+        margin: 0 12px;
+        font-size: 24px;
+      }
+      footer h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const runButton = document.querySelector(".buttons button");
+    const codeInput = document.getElementById("codeInput");
+    const outputSection = document.querySelector(".output-section pre");
+
+    runButton.addEventListener("click", async () => {
+      const code = codeInput.value.trim();
+      if (!code) {
+        outputSection.textContent = "Please enter code to check.";
+        return;
+      }
+
+      try {
+        const response = await fetch("/check", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code: code }),
+        });
+
+        const result = await response.json();
+        outputSection.textContent = result.output || "No response from server.";
+      } catch (err) {
+        outputSection.textContent = "Error communicating with server.";
+        console.error("Server error:", err);
+      }
+    });
+  });
+</script>
+
+  <header style="
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #fdf5f0;  /* soft nude background */
+  color: #4a4a4a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-bottom: 2px solid #e0dcd5;
+">
+  <h1 style="
+    font-size: 3.5rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+  ">
+    Type Checker
+  </h1>
+  <p style="
+    font-family: 'Cursive', 'Brush Script MT', sans-serif;
+    font-size: 1.4rem;
+    color: #7a6e65;
+    margin-top: 20px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    font-style: italic;
+  ">
+    "Where every input meets its true identity."
+  </p>
+</header>
+
+
+
+
+
+<section class="type-checker-container" style="max-width: 1000px; margin: 40px auto; background: #fff; padding: 40px 30px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"> 
+
+
+ 
+  <!-- Main Code Input Area -->
+  <main>
+    <label for="codeInput" style="font-size: 1.1rem; color: #333; display: block; margin-bottom: 10px;">Enter your source code:</label>
+    <textarea id="codeInput" placeholder="// Write your code here..." style="width: 100%; height: 180px; padding: 15px; border: 1px solid #ccc; border-radius: 10px; font-family: monospace; font-size: 1rem; background: #f9f9f9;"></textarea>
+
+    <div class="buttons" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px;">
+     
+      <button id="btnAST" style="flex: 1 1 180px; padding: 12px; font-size: 1rem; background-color:#5b29542b; color: white; border: none; border-radius: 8px; cursor: pointer;">Generate AST</button>
+      <button id="btnSymbolTable" style="flex: 1 1 180px; padding: 12px; font-size: 1rem; background-color: #5b29542b; color: white; border: none; border-radius: 8px; cursor: pointer;">Generate Symbol Table</button>
+      <button id="btnTypeCheck" style="flex: 1 1 180px; padding: 12px; font-size: 1rem; background-color: #5b29542b; color: white; border: none; border-radius: 8px; cursor: pointer;">Check Semantic Errors</button>
+    </div>
+
+    <!-- Outputs -->
+    <section class="output-section" style="margin-top: 30px;">
+      <h2 style="color: #3b220c;">Abstract Syntax Tree (AST)</h2>
+      <pre id="astOutput" style="background: #f1f1f1; padding: 15px; border-radius: 8px;">(AST output will appear here)</pre>
+    </section>
+
+    <section class="output-section" style="margin-top: 20px;">
+      <h2 style="color: #3b220c;">Symbol Table</h2>
+      <pre id="symbolTableOutput" style="background: #f1f1f1; padding: 15px; border-radius: 8px;">(Symbol table output will appear here)</pre>
+    </section>
+
+    <section class="output-section" style="margin-top: 20px;">
+      <h2 style="color: #3b220c;">Semantic Errors</h2>
+      <pre id="semanticErrorsOutput" style="background: #f1f1f1; padding: 15px; border-radius: 8px;">(Semantic errors will appear here)</pre>
+    </section>
+  </main>
+
+  <!-- Key Features -->
+  <section class="key-features" style="margin-top: 50px;">
+    <h2 style="text-align: center; font-size: 2rem; color: #222; margin-bottom: 30px;">Why You’ll Love This Type Checker</h2>
+
+    <div class="features-container" style="display: flex; justify-content: center; gap: 25px; flex-wrap: wrap;">
+      
+      <div class="feature-item" style="background: #f9f9f9; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1 1 280px; transition: all 0.3s;">
+        <h3 style="color:#3b220c;">Accurate AST Generation</h3>
+        <p style="color:#3b220c;">Builds a precise tree structure to represent your program logic.</p>
+      </div>
+
+      <div class="feature-item" style="background: #f9f9f9; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1 1 280px; transition: all 0.3s;">
+        <h3 style="color: #3b220c;">Powerful Type Checker</h3>
+        <p style="color: #3b220c;">Detects mismatches, undeclared variables, and scope violations.</p>
+      </div>
+
+      <div class="feature-item" style="background: #f9f9f9; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1 1 280px; transition: all 0.3s;">
+        <h3 style="color: #3b220c;">Live Symbol Table</h3>
+        <p style="color: #3b220c;">Displays identifier name, type, kind, and scope clearly.</p>
+      </div>
+
+    </div>
+  </section>
+</section>
+
+
+
+<!-- Team Section -->
+<section class="team-section">
+  <h2>Meet Our Team</h2>
+  <div class="team-members">
+    <div class="member">
+      <img src="image/arpita.jpg" alt="Arpita Rungta" />
+      <p>Arpita Rungta</p>
+    </div>
+    <div class="member">
+      <img src="image/anshika.jpg" alt="Anshika Panwar" />
+      <p>Anshika Panwar</p>
+    </div>
+    <div class="member">
+  <img src="image/vanshika.jpg" alt="Vanshika Dixit" />
+  <p>Vanshika Dixit</p>
+</div>
+    <div class="member">
+      <img src="image/lakshita.jpg" alt="Lakshita Chauhan" />
+      <p>Lakshita Chauhan</p>
+    </div>
+  </div>
+</section>
+
+<!-- Redesigned Footer with image icons (non-clickable) -->
+<footer>
+  <h2>Connect With Us</h2>
+  <div class="social-links" aria-label="Social Media Icons" style="display: flex; gap: 15px; align-items: center;">
+    <img src="https://cdn-icons-png.flaticon.com/24/733/733547.png" alt="Facebook" width="24" height="24">
+    <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn" width="24" height="24">
+    <img src="https://cdn-icons-png.flaticon.com/24/733/733553.png" alt="GitHub" width="24" height="24">
+    <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" width="24" height="24">
+    <img src="https://cdn-icons-png.flaticon.com/24/2111/2111463.png" alt="Instagram" width="24" height="24">
+    <img src="https://cdn-icons-png.flaticon.com/24/732/732200.png" alt="Email" width="24" height="24">
+  </div>
+</footer>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const codeInput = document.getElementById("codeInput");
+
+  const astOutput = document.getElementById("astOutput");
+  const symbolTableOutput = document.getElementById("symbolTableOutput");
+  const semanticErrorsOutput = document.getElementById("semanticErrorsOutput");
+
+  async function sendCodeRequest(action, outputElement) {
+    const code = codeInput.value.trim();
+    if (!code) {
+      outputElement.textContent = "Please enter code to check.";
+      return;
+    }
+
+    try {
+      const response = await fetch("/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, action }),
+      });
+      const result = await response.json();
+      outputElement.textContent = result.output || "No response from server.";
+    } catch (err) {
+      outputElement.textContent = "Error communicating with server.";
+      console.error("Server error:", err);
+    }
+  }
+
+  document.getElementById("btnAST").addEventListener("click", () => {
+    sendCodeRequest("generateAST", astOutput);
+  });
+
+  document.getElementById("btnSymbolTable").addEventListener("click", () => {
+    sendCodeRequest("generateSymbolTable", symbolTableOutput);
+  });
+
+  document.getElementById("btnTypeCheck").addEventListener("click", () => {
+    sendCodeRequest("checkSemanticErrors", semanticErrorsOutput);
+  });
+});
+</script>
+ <!--<script>
+  // Get elements
+  const codeInput = document.getElementById('codeInput');
+  const astOutput = document.getElementById('astOutput');
+  const symbolTableOutput = document.getElementById('symbolTableOutput');
+  const semanticErrorsOutput = document.getElementById('semanticErrorsOutput');
+
+  // AST Button
+  document.getElementById('btnAST').addEventListener('click', () => {
+    fetch('http://127.0.0.1:5000/generate-ast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: codeInput.value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        astOutput.textContent = data.ast || 'No AST generated';
+      })
+      .catch(err => {
+        astOutput.textContent = 'Error: ' + err.message;
+      });
+  });
+
+  // Symbol Table Button
+  document.getElementById('btnSymbolTable').addEventListener('click', () => {
+    fetch('http://127.0.0.1:5000/generate-symbol-table', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: codeInput.value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        symbolTableOutput.textContent = JSON.stringify(data.symbolTable, null, 2);
+      })
+      .catch(err => {
+        symbolTableOutput.textContent = 'Error: ' + err.message;
+      });
+  });
+
+  // Semantic Check Button
+  document.getElementById('btnTypeCheck').addEventListener('click', () => {
+    fetch('http://127.0.0.1:5000/semantic-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: codeInput.value })
+    })
+      .then(res => res.json())
+      .then(data => {
+        semanticErrorsOutput.textContent = data.errors || 'No semantic errors found';
+      })
+      .catch(err => {
+        semanticErrorsOutput.textContent = 'Error: ' + err.message;
+      });
+  });
+</script>-->
+</html>
