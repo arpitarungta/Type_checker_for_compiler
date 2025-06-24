@@ -1,0 +1,45 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore compiled C outputs
+*.o
+*.out
+*.exe
+*.a
+*.so
+
+# Ignore Flex/Bison generated files
+lex.yy.c
+parser.tab.c
+parser.tab.h
+
+# VS Code settings
+.vscode/
+
+# Ignore logs and system files
+*.log
+.DS_Store
+Thumbs.db
+
+# Ignore virtual environment if used
+venv/
+env/
+
+# Ignore input/output test files
+*.in
+*.out
+*.input
+*.output
+
+# Bytecode and temporary files
+*~
+*.swp
+
+# Ignore HTML temp cache
+*.bak
+
+# Ignore database or session files (if used later)
+*.db
+*.sqlite
